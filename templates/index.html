@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Data</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Add this script inside the <head> section of your HTML file -->
+
+
+</head>
+<body>
+
+<div class="container">
+    <h2 class="mt-5 mb-4">iTrust Staff Attendance Portal</h2>
+
+    <!-- Filter Form -->
+    <form method="GET" action="/">
+        <div class="row mb-3">
+            <div class="col">
+                <label for="startDateFilter" class="form-label">Start Date:</label>
+                <input type="date" class="form-control" id="startDateFilter" name="start_date">
+            </div>
+            <div class="col">
+                <label for="endDateFilter" class="form-label">End Date:</label>
+                <input type="date" class="form-control" id="endDateFilter" name="end_date">
+            </div>
+            <div class="col">
+                <label for="personFilter" class="form-label">Filter by Person:</label>
+                <select class="form-select" id="personFilter" name="person">
+                    <option value="">All Persons</option>
+                    <!-- Populate options dynamically from data -->
+                    {% for person in persons %}
+                    <option value="{{ person }}">{{ person }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col">
+                <label for="statusFilter" class="form-label">Filter by Status:</label>
+                <select class="form-select" id="statusFilter" name="status">
+                    <option value="">All Statuses</option>
+                    <option value="Late Comer">Late Comer</option>
+                    <option value="Early Leaver">Early Leaver</option>
+                    <option value="Absentee">Absentee</option>
+                    <!-- Add more status options as needed -->
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Apply Filters</button>
+    </form>
+    
+
+    <!-- Display Filtered Data -->
+    <div class="table-responsive mt-4">
+        <table id="attendance-table" class="table table-sm table-bordered">
+            <!-- Table headers -->
+            <thead class="table-light">
+                <tr>
+                    <th>Staff ID</th>
+                    <th>Staff Name</th>
+                    <th>Access Date</th>
+                    <th>First Entry Time</th>
+                    <th>Last Exit Time</th>
+                    <th>Entry Status</th>
+                    <th>Exit Status</th>
+                    <th>Absentee Status</th>
+                </tr>
+            </thead>
+            <!-- Table body -->
+            <tbody>
+                {% for row in filtered_data %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                    <td>{{ row[3] }}</td>
+                    <td>{{ row[4] }}</td>
+                    <td>{{ row[5] }}</td>
+                    <td>{{ row[6] }}</td>
+                    <td>{{ row[7] }}</td>
+                   
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    <!-- Pagination -->
+    <nav>
+        <ul id="pagination" class="pagination justify-content-center">
+          <!-- Pagination links will be populated dynamically using JavaScript -->
+        </ul>
+      </nav>
+      
+      <!-- Row selection dropdown -->
+      <div class="row mt-3">
+        <div class="col-auto">
+          <label for="rowsPerPage" class="form-label">Rows per page:</label>
+          <select id="rowsPerPage" class="form-select">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+
+
+    
+
+<script>
+    // JavaScript to reorder table rows based on current date
+    document.addEventListener('DOMContentLoaded', function() {
+      var tableBody = document.querySelector('#attendance-table tbody');
+      var rows = Array.from(tableBody.querySelectorAll('tr'));
+
+      // Sort rows based on access date
+      rows.sort(function(a, b) {
+        var dateA = new Date(a.children[2].textContent);
+        var dateB = new Date(b.children[2].textContent);
+        return dateB - dateA; // Sort in descending order of access date
+      });
+
+      // Reorder table rows
+      rows.forEach(function(row) {
+        tableBody.appendChild(row);
+      });
+    });
+  </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var tableBody = document.querySelector('#attendance-table tbody');
+      var pagination = document.querySelector('#pagination');
+      var rowsPerPageSelect = document.querySelector('#rowsPerPage');
+      var currentPageElement = document.querySelector('#currentPage');
+      var rows = Array.from(tableBody.querySelectorAll('tr'));
+  
+      var currentPage = 1;
+      var rowsPerPage = parseInt(rowsPerPageSelect.value);
+  
+      // Calculate total number of pages
+      var totalPages = Math.ceil(rows.length / rowsPerPage);
+  
+      // Display rows for current page
+      function displayRows() {
+        var startIndex = (currentPage - 1) * rowsPerPage;
+        var endIndex = startIndex + rowsPerPage;
+        var pageRows = rows.slice(startIndex, endIndex);
+  
+        tableBody.innerHTML = '';
+        pageRows.forEach(function(row) {
+          tableBody.appendChild(row);
+        });
+      }
+  
+      // Generate pagination links
+      function generatePaginationLinks() {
+        pagination.innerHTML = '';
+  
+        // Previous button
+        var prevLi = document.createElement('li');
+        prevLi.classList.add('page-item');
+        var prevLink = document.createElement('a');
+        prevLink.classList.add('page-link');
+        prevLink.href = '#';
+        prevLink.textContent = 'Previous';
+        prevLink.addEventListener('click', function(event) {
+          event.preventDefault();
+          if (currentPage > 1) {
+            currentPage--;
+            displayRows();
+            updateCurrentPageLink();
+          }
+        });
+        prevLi.appendChild(prevLink);
+        pagination.appendChild(prevLi);
+  
+        // Current page number
+        var currentLi = document.createElement('li');
+        currentLi.classList.add('page-item', 'disabled');
+        var currentLink = document.createElement('a');
+        currentLink.id = 'currentPage';
+        currentLink.classList.add('page-link');
+        currentLink.href = '#';
+        currentLink.textContent = currentPage;
+        currentLi.appendChild(currentLink);
+        pagination.appendChild(currentLi);
+  
+        // Next button
+        var nextLi = document.createElement('li');
+        nextLi.classList.add('page-item');
+        var nextLink = document.createElement('a');
+        nextLink.classList.add('page-link');
+        nextLink.href = '#';
+        nextLink.textContent = 'Next';
+        nextLink.addEventListener('click', function(event) {
+          event.preventDefault();
+          if (currentPage < totalPages) {
+            currentPage++;
+            displayRows();
+            updateCurrentPageLink();
+          }
+        });
+        nextLi.appendChild(nextLink);
+        pagination.appendChild(nextLi);
+      }
+  
+      // Update current page link
+      function updateCurrentPageLink() {
+        currentPageElement.textContent = currentPage;
+      }
+  
+      // Initialize pagination
+      displayRows();
+      generatePaginationLinks();
+  
+      // Event listener for rows per page change
+      rowsPerPageSelect.addEventListener('change', function() {
+        rowsPerPage = parseInt(this.value);
+        currentPage = 1;
+        totalPages = Math.ceil(rows.length / rowsPerPage);
+        displayRows();
+        generatePaginationLinks();
+      });
+    });
+  </script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var tableBody = document.querySelector('#attendance-table tbody');
+      var dateFilter = document.querySelector('#dateFilter');
+      var personFilter = document.querySelector('#personFilter');
+      var statusFilter = document.querySelector('#statusFilter');
+  
+      var rows = Array.from(tableBody.querySelectorAll('tr'));
+  
+      // Display rows based on selected filters
+      function filterRows() {
+        var dateValue = dateFilter.value;
+        var personValue = personFilter.value;
+        var statusValue = statusFilter.value;
+  
+        rows.forEach(function(row) {
+          var dateCell = row.querySelector('.access-date');
+          var personCell = row.querySelector('.staff-name');
+          var statusCell = row.querySelector('.status');
+  
+          var dateMatch = !dateValue || dateCell.textContent === dateValue;
+          var personMatch = !personValue || personCell.textContent === personValue;
+          var statusMatch = !statusValue || statusCell.textContent === statusValue;
+  
+          row.style.display = dateMatch && personMatch && statusMatch ? '' : 'none';
+        });
+      }
+  
+      // Event listeners for filter elements
+      dateFilter.addEventListener('change', filterRows);
+      personFilter.addEventListener('change', filterRows);
+      statusFilter.addEventListener('change', filterRows);
+    });
+  </script>
+
+
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
