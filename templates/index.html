@@ -346,7 +346,7 @@ form {
           var personMatch = !personValue || personCell.textContent === personValue;
           var statusMatch = !statusValue || statusCell.textContent === statusValue;
   
-          row.style.display = dateMatch && personMatch && statusMatch ? '' : 'none';
+          row.style.display = dateMatch && personMatch && statusMatch ? '' : '-';
         });
       }
   
