@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, jsonify 
+from flask import redirect, url_for, session
 import psycopg2
 from datetime import datetime, timedelta
 
-app = Flask(__name__)
 
 
  # Add this import if not already present
@@ -167,9 +167,44 @@ def filter_data(data, filters):
 
 
 
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    # Validate username and password (Example: hardcoded validation)
+    if username == 'admin' and password == 'password':
+        # Store the username in the session
+        session['username'] = username
+        # Successful login, redirect to the main page
+        return redirect(url_for('index'))
+    else:
+        # Invalid credentials, render login page again with a message
+        return render_template('login.html', error_message='Invalid username or password')
+
+@app.route('/')
+def main_page():
+    # Check if the user is logged in
+    if 'username' in session:
+        # Render the main page after successful login
+        return render_template('index.html')
+    else:
+        # If the user is not logged in, redirect to the login page
+        return redirect(url_for('login'))
+
+
+# if __name__ == "__main__":
+#     app.run(host='0.0.0.0', port=5000)
 
 
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
+
+# if __name__ == '__main__':
+#     app.run(debug=True)
+
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)  # Example port, adjust as needed
+
