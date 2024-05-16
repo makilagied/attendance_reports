@@ -1,25 +1,34 @@
+from flask import Flask
 from flask import redirect, url_for, session, render_template, request
 from fetch_data import fetch_data_from_database
 from filter import filter_data, get_persons
-from flask import Flask
 from auth import authenticate_user
+import secrets
 
 
 app = Flask(__name__)
 
+app.secret_key =secrets.token_hex(16)
+
 @app.route('/login', methods=['GET', 'POST'])  # Allow both GET and POST requests
 def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+    if request.method == 'POST':  # Check if the request method is POST
+        username = request.form['username']
+        password = request.form['password']
 
         if authenticate_user(username, password):
             session['username'] = username
-            return redirect(url_for('index'))  # Redirect to the main page after successful login
+            return redirect(url_for('main_page'))  # Redirect to the main page after successful login
         else:
-            return render_template('login.html', error_message='Invalid username or password')
+            error_message = 'Invalid username or password'
+            return render_template('login.html', error_message=error_message)
+    return render_template('login.html', error_message=None)
 
-    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('main_page'))
 
 
 @app.route('/')

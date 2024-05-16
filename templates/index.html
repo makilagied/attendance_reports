@@ -10,6 +10,47 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     
       <style>
+
+body {
+    background-color: #f8f9fa;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensure body stretches to fit viewport */
+}
+
+
+        .top-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid rgba(0,0,0,.1);
+        }
+
+        .navbar-brand img {
+            height: 40px;
+            /* Adjust logo height */
+        }
+
+        .navbar-text {
+            font-size: 1.5rem;
+            color: #007bff;
+            margin: 0;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            border: none;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .navbar-text {
+                font-size: 1.2rem;
+            }
+        }
         /* Style for form */
 form {
     max-width: auto;
@@ -29,6 +70,8 @@ form {
     margin-right: 15px;
 }
 
+
+
 /* Style for form label */
 .form-label {
     margin-bottom: 5px;
@@ -39,7 +82,7 @@ form {
 /* Style for form control */
 .form-control {
     width: 100%;
-    padding: 10px;
+    /* padding: 10px; */
     border: 1px solid #ccc;
     border-radius: 5px;
 }
@@ -54,7 +97,7 @@ form {
 
 /* Style for form button */
 .btn {
-    padding: 10px 20px;
+    /* padding: 10px 20px; */
     background-color: #007bff;
     color: #fff;
     border: none;
@@ -75,6 +118,8 @@ form {
     }
 }
 
+
+
       </style>
 
 </head>
@@ -83,20 +128,16 @@ form {
     <div class="container">
         <a class="navbar-brand" href="#">
             <!-- Your logo image goes here -->
-            <img src="../assets/itr_logo.png" alt="Logo">
+            <img src="https://itrust.co.tz/logos/logo.svg" alt="Logo">
         </a>
         <div class="navbar-collapse justify-content-center">
             <h3 class="navbar-text">iTrust Staff Attendance</h3>
         </div>
         <div class="navbar-nav ml-auto">
-            <!-- Your other icons or navigation links go here -->
-            <a href="#" class="nav-item nav-link">
-                <!-- <img src="icon1.png" alt="Icon 1"> -->
-            </a>
-            <a href="#" class="nav-item nav-link">
-                <!-- <img src="icon2.png" alt="Icon 2"> -->
-            </a>
-            <!-- Add more icons as needed -->
+            <!-- Logout Button -->
+            <button class="btn btn-danger logout-btn" id="logoutBtn">
+              <i class="fas fa-sign-out-alt "></i> Logout
+          </button>
         </div>
     </div>
 </header>
@@ -107,43 +148,55 @@ form {
     <!-- <h2 class="mt-5 mb-4">iTrust Staff Attendance Portal</h2> -->
 
     <!-- Filter Form -->
-    <form method="GET" action="/">
-        <div class="row mb-3">
-            <div class="col">
-                <label for="startDateFilter" class="form-label">Start Date:</label>
-                <input type="date" class="form-control" id="startDateFilter" name="start_date">
-            </div>
-            <div class="col">
-                <label for="endDateFilter" class="form-label">End Date:</label>
-                <input type="date" class="form-control" id="endDateFilter" name="end_date">
-            </div>
-            <div class="col">
-                <label for="personFilter" class="form-label">Filter by Person:</label>
-                <select class="form-select" id="personFilter" name="person">
-                    <option value="">All Persons</option>
-                    <!-- Populate options dynamically from data -->
-                    {% for person in persons %}
-                    <option value="{{ person }}">{{ person }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col">
-                <label for="statusFilter" class="form-label">Filter by Status:</label>
-                <select class="form-select" id="statusFilter" name="status">
-                    <option value="">All Statuses</option>
-                    <option value="Late Comer">Late Comer</option>
-                    <option value="Early Leaver">Early Leaver</option>
-                    <option value="Absentee">Absentee</option>
-                    <!-- Add more status options as needed -->
-                </select>
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary">Apply Filters</button>
-    </form>
+    <form method="GET" action="/" class="form-inline">
+      <div class="row align-items-center">
+          <div class="col-sm-auto mb-2">
+              <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                  <input type="date" class="form-control form-control-sm form-control-placeholder" id="startDateFilter" name="start_date">
+              </div>
+          </div>
+          <div class="col-sm-auto mb-2">
+              <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                  <input type="date" class="form-control form-control-sm form-control-placeholder" id="endDateFilter" name="end_date">
+              </div>
+          </div>
+          <div class="col-sm-auto mb-2">
+              <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-user"></i></span>
+                  <select class="form-control form-control-sm" id="personFilter" name="person" aria-label="Filter by Person">
+                      <option value="">All Staff</option>
+                      <!-- Populate options dynamically from data -->
+                      {% for person in persons %}
+                      <option value="{{ person }}">{{ person }}</option>
+                      {% endfor %}
+                  </select>
+              </div>
+          </div>
+          <div class="col-sm-auto mb-2">
+              <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-info-circle"></i></span>
+                  <select class="form-control form-control-sm" id="statusFilter" name="status" aria-label="Filter by Status">
+                      <option value="">Select Status</option>
+                      <option value="Late Comer">Late Comer</option>
+                      <option value="Early Leaver">Early Leaver</option>
+                      <option value="Absentee">Absentee</option>
+                      <!-- Add more status options as needed -->
+                  </select>
+              </div>
+          </div>
+          <div class="col-sm-auto">
+              <button type="submit" class="btn btn-primary btn-sm form-control form-control-sm">Apply Filters</button>
+          </div>
+      </div>
+  </form>
+  
+
     
 
     <!-- Display Filtered Data -->
-    <div class="table-responsive mt-4">
+    <div class="table-responsive mt-4"> 
         <table id="attendance-table" class="table table-sm table-bordered">
             <!-- Table headers -->
             <thead class="table-light">
@@ -200,8 +253,20 @@ form {
     </div>
 
 
-
-    
+    <script>
+      document.getElementById('logoutBtn').addEventListener('click', function() {
+          // Send an AJAX request to the logout endpoint
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', '/logout', true);
+          xhr.onreadystatechange = function() {
+              if (xhr.readyState === 4 && xhr.status === 200) {
+                  // Redirect to the main page after successful logout
+                  window.location.href = '{{ url_for("main_page") }}';
+              }
+          };
+          xhr.send();
+      });
+  </script>
 
 <script>
     // JavaScript to reorder table rows based on current date
