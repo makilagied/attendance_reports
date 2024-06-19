@@ -1,35 +1,66 @@
-from flask import Flask
-from flask import redirect, url_for, session, render_template, request
+from flask import Flask, redirect, url_for, session, render_template, request, flash
 from fetch_data import fetch_data_from_database
 from filter import filter_data, get_persons
-from auth import authenticate_user
+from auth import authenticate_user, change_password
 import secrets
-
+import logging
 
 app = Flask(__name__)
+app.secret_key = secrets.token_hex(16)
 
-app.secret_key =secrets.token_hex(16)
+# Setup logging
+logging.basicConfig(level=logging.DEBUG)
 
-@app.route('/login', methods=['GET', 'POST'])  # Allow both GET and POST requests
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':  # Check if the request method is POST
-        username = request.form['username']
-        password = request.form['password']
+    change_password = False  # Initialize change_password variable
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        logging.debug(f"Login attempt for username: {username}")
+        
+        auth_result = authenticate_user(username, password)
+        logging.debug(f"Authentication result: {auth_result}")
 
-        if authenticate_user(username, password):
+        if auth_result == "authenticated":
             session['username'] = username
-            return redirect(url_for('main_page'))  # Redirect to the main page after successful login
+            flash("Welcome, you are successfully logged in!", "success")
+            return redirect(url_for('main_page'))
+        elif auth_result == "change_password":
+            change_password = True
+            flash("You are required to change your password.", "info")
+            return render_template('login.html', change_password=change_password, username=username)
+        elif auth_result == "invalid_credentials":
+            flash("Invalid username or password. Please try again.", "danger")
         else:
-            error_message = 'Invalid username or password'
-            return render_template('login.html', error_message=error_message)
-    return render_template('login.html', error_message=None)
+            flash("An error occurred during authentication. Please try again later.", "danger")
 
+    # Pass change_password to the template
+    return render_template('login.html', change_password=change_password)
+
+@app.route('/change_password', methods=['POST'])
+def change_password_route():
+    username = request.form.get('username')
+    new_password = request.form.get('new_password')
+    confirm_new_password = request.form.get('confirm_new_password')
+    
+    logging.debug(f"Change password attempt for username: {username}")
+
+    if new_password != confirm_new_password:
+        flash("Passwords do not match. Please try again.", "danger")
+        return render_template('login.html', change_password=True, username=username)
+
+    if change_password(username, new_password):
+        flash("Your password has been changed successfully. Please log in again.", "success")
+        return redirect(url_for('login'))
+    else:
+        flash("There was an error changing your password. Please try again.", "danger")
+        return render_template('login.html', change_password=True, username=username)
 
 @app.route('/logout')
 def logout():
     session.pop('username', None)
     return redirect(url_for('main_page'))
-
 
 @app.route('/')
 def main_page():
@@ -46,4 +77,3 @@ def main_page():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-

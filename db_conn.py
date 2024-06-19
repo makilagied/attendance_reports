@@ -15,13 +15,4 @@ def create_db_connection():
         print(f"Error connecting to the database: {e}")
         return None
 
-# Example usage:
-# conn = create_db_connection()
-# if conn:
-#     # Use the connection
-#     cursor = conn.cursor()
-#     cursor.execute("SELECT * FROM your_table")
-#     rows = cursor.fetchall()
-#     print(rows)
-#     cursor.close()
-#     conn.close()
+
