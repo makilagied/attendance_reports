@@ -55,6 +55,8 @@ CROSS JOIN
     (SELECT DISTINCT access_date FROM attendance) ad
 LEFT JOIN 
     attendance a ON s.staff_name = a.personal_name AND ad.access_date = a.access_date
+WHERE 
+    EXTRACT(DOW FROM ad.access_date) <> 0  -- Exclude Sundays
 GROUP BY 
     s.staff_id, s.staff_name, ad.access_date
 ORDER BY 
