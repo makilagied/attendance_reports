@@ -76,6 +76,10 @@
         .custom-checkbox .custom-control-input:checked~.custom-control-label::before {
             background-color: #e57225 !important;
         }
+        .error-message {
+            color: red;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -127,7 +131,7 @@
                             <div class="input-group-append">
                                 <span class="input-group-text"><i class="fas fa-key"></i></span>
                             </div>
-                            <input type="password" name="new_password" class="form-control input_pass" value="" placeholder="new password">
+                            <input type="password" name="new_password" class="form-control input_pass" value="" placeholder="new password"  pattern="(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}" title="Password must be at least 8 characters long and contain at least one uppercase letter, one number, and one special character.">
                         </div>
                         <div class="input-group mb-2">
                             <div class="input-group-append">
@@ -145,6 +149,19 @@
     </div>
 
     <script>
+    function checkPasswords() {
+        var newPassword = document.getElementById("new_password").value;
+        var confirmNewPassword = document.getElementById("confirm_new_password").value;
+        var errorMessage = document.getElementById("error-message");
+
+        if (newPassword !== confirmNewPassword) {
+            errorMessage.style.display = "block";
+            return false;
+        } else {
+            errorMessage.style.display = "none";
+            return true;
+        }
+    }
         // JavaScript to show alerts based on Flask flash messages
         document.addEventListener("DOMContentLoaded", function() {
             var flashMessages = document.querySelectorAll('#flash-messages #flash-message');
@@ -170,5 +187,6 @@
             }
         });
     </script>
+
 </body>
 </html>
